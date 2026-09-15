@@ -4,14 +4,19 @@ import csv
 INPUT_FILE = "data/superheroes_clean.csv"
 
 
-# Features we want to turn into questions
+# ==========================================
+# FEATURES
+# ==========================================
+
 categorical_features = [
     "Alignment",
     "Gender",
     "Eye_color",
     "Hair_color",
     "Species",
-    "Creator"
+    "Creator",
+    "Tier",
+    "Level"
 ]
 
 
@@ -21,21 +26,30 @@ numeric_features = [
     "Intelligence",
     "Power",
     "Speed",
-    "Strength"
+    "Strength",
+    "IQ",
+    "Speed_velocity",
+    "Strength_force"
 ]
 
 
+# ==========================================
+# LOAD DATASET
+# ==========================================
+
 with open(INPUT_FILE, "r", encoding="utf-8") as file:
 
-    data = list(csv.DictReader(file))
+    data = list(
+        csv.DictReader(file)
+    )
 
 
 questions = []
 
 
-# -----------------------------------
-# 1. Categorical features
-# -----------------------------------
+# ==========================================
+# 1. CATEGORICAL QUESTIONS
+# ==========================================
 
 for feature in categorical_features:
 
@@ -60,9 +74,9 @@ for feature in categorical_features:
         })
 
 
-# -----------------------------------
-# 2. Numeric features
-# -----------------------------------
+# ==========================================
+# 2. NUMERIC QUESTIONS
+# ==========================================
 
 for feature in numeric_features:
 
@@ -77,40 +91,134 @@ for feature in numeric_features:
 
         try:
             values.append(float(value))
+
         except ValueError:
             pass
 
-    if len(values) == 0:
+
+    if len(values) < 2:
         continue
 
-    # Use several threshold questions
-    minimum = min(values)
-    maximum = max(values)
 
-    thresholds = [
-        minimum + (maximum - minimum) * 0.25,
-        minimum + (maximum - minimum) * 0.50,
-        minimum + (maximum - minimum) * 0.75
-    ]
+    # --------------------------------------
+    # Get unique actual values
+    # --------------------------------------
 
-    for threshold in thresholds:
+    unique_values = sorted(
+        set(values)
+    )
+
+
+    if len(unique_values) < 2:
+        continue
+
+
+    # --------------------------------------
+    # Create boundaries between actual values
+    #
+    # Example:
+    #
+    # 100, 120
+    #
+    # boundary = 110
+    #
+    # --------------------------------------
+
+    candidate_thresholds = []
+
+    for i in range(
+        len(unique_values) - 1
+    ):
+
+        left = unique_values[i]
+
+        right = unique_values[i + 1]
+
+
+        threshold = (
+            left + right
+        ) / 2
+
+
+        candidate_thresholds.append(
+            threshold
+        )
+
+
+    # --------------------------------------
+    # Too many possible thresholds
+    #
+    # Keep a manageable number spread
+    # across the complete numeric range.
+    # --------------------------------------
+
+    MAX_THRESHOLDS = 25
+
+
+    if len(candidate_thresholds) > MAX_THRESHOLDS:
+
+        step = (
+            len(candidate_thresholds)
+            / MAX_THRESHOLDS
+        )
+
+
+        selected_thresholds = []
+
+
+        for i in range(MAX_THRESHOLDS):
+
+            index = int(
+                i * step
+            )
+
+            selected_thresholds.append(
+                candidate_thresholds[index]
+            )
+
+
+        candidate_thresholds = (
+            selected_thresholds
+        )
+
+
+    # --------------------------------------
+    # Create numeric questions
+    # --------------------------------------
+
+    for threshold in candidate_thresholds:
 
         questions.append({
+
             "feature": feature,
+
             "value": threshold,
+
             "type": "numeric"
+
         })
 
 
-# -----------------------------------
-# Display questions
-# -----------------------------------
+# ==========================================
+# DISPLAY RESULT
+# ==========================================
 
-print("TOTAL QUESTIONS GENERATED:", len(questions))
+print(
+    "TOTAL QUESTIONS GENERATED:",
+    len(questions)
+)
+
 
 print()
-print("FIRST 50 QUESTIONS")
-print("==================")
+
+print(
+    "FIRST 50 QUESTIONS"
+)
+
+print(
+    "=================="
+)
+
 
 for question in questions[:50]:
 

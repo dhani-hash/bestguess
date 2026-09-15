@@ -6,8 +6,8 @@ from questions import ask_question
 # Tree control parameters
 # ====================================
 
-MAX_DEPTH = 10
-MIN_SAMPLES = 5
+MAX_DEPTH = 15
+MIN_SAMPLES = 2
 
 
 # ====================================

@@ -4,30 +4,25 @@ def ask_question(row, question):
     value = question["value"]
     question_type = question["type"]
 
-    actual_value = row[feature].strip()
+    actual_value = row[feature]
 
-
-    # -----------------------------
     # Categorical question
-    # -----------------------------
-
     if question_type == "categorical":
 
-        return actual_value == value
+        actual_value = str(actual_value).strip()
+        expected_value = str(value).strip()
 
+        return actual_value == expected_value
 
-    # -----------------------------
     # Numeric question
-    # -----------------------------
-
     if question_type == "numeric":
 
         try:
             actual_value = float(actual_value)
-        except ValueError:
+            value = float(value)
+        except (ValueError, TypeError):
             return False
 
         return actual_value >= value
-
 
     return False
